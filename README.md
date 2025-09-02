@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Store API Flutter App
 
 Una aplicación Flutter que consume la **Fake Store API** e implementa Clean Architecture con gestión de estado usando Provider.
@@ -26,3 +27,7 @@ La aplicación permite obtener y mostrar en consola:
 - **Data**: Modelos, DataSources y implementación de Repositorios
 
 **Tecnologías**: Flutter, Provider, HTTP, Dartz (Either pattern)
+=======
+# FASE2
+Fase 2 de la ruta de crecimiento PRAGMA
+>>>>>>> b77f25d820d17e1a90977e879cd1ba546b0edb9c
