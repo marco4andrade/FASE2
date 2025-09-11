@@ -317,9 +317,8 @@ flutter test
 
 Al ejecutar `flutter run`, verás en la consola del IDE/terminal:
 1. **Carga inicial** con estados de loading
-2. **Datos procesados** en múltiples formatos
-3. **Error handling** si hay problemas de conectividad
-4. **Información completa** de productos, categorías y usuarios
+2. **Error handling** si hay problemas de conectividad
+3. **Información completa** de productos, categorías y usuarios
 
 
 ## 👨‍💻 Autor
