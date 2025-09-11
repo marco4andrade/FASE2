@@ -1,26 +1,47 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/product.dart';
-import '../../domain/entities/category.dart';
-import '../../domain/entities/user.dart';
-import '../../domain/usecases/get_products.dart';
-import '../../domain/usecases/get_categories.dart';
-import '../../domain/usecases/get_users.dart';
-import '../../core/usecases/usecase.dart';
+import '../../domain/entities/product_entity.dart';
+import '../../domain/entities/category_entity.dart';
+import '../../domain/entities/user_entity.dart';
+import '../../domain/usecases/store_use_cases.dart';
+import '../../core/error/failures.dart';
 
+/// **Estados posibles del StoreProvider**
+/// 
+/// Define los estados del ciclo de vida para operaciones de carga de datos
+/// desde APIs externas.
+/// 
+/// **Estados disponibles:**
+/// - [initial]: Estado inicial, sin datos cargados
+/// - [loading]: Cargando datos desde API
+/// - [loaded]: Datos cargados exitosamente
+/// - [error]: Error en carga de datos
 enum StoreState { initial, loading, loaded, error }
 
-class StoreProvider extends ChangeNotifier {
-  final GetProducts _getProducts;
-  final GetCategories _getCategories;
-  final GetUsers _getUsers;
+/// **StoreProvider** - Proveedor de estado para datos de tienda
+/// 
+/// Provider principal que maneja el estado de la aplicación para todos
+/// los datos relacionados con la tienda (productos, categorías, usuarios).
+/// 
+/// **Responsabilidades:**
+/// - Gestionar estado de carga de datos desde APIs
+/// - Proporcionar datos tipados a widgets consumidores
+/// - Manejar errores de manera centralizada
+/// - Notificar cambios de estado a la UI
 
+class StoreProvider extends ChangeNotifier {
+  final StoreUseCases _storeUseCases;
+
+  /// **Constructor principal** - Inicializa StoreProvider con dependencias
+  /// 
+  /// Configura el provider con casos de uso inyectados y ejecuta
+  /// inicialización automática del estado.
+  /// 
+  
   StoreProvider({
-    required GetProducts getProducts,
-    required GetCategories getCategories,
-    required GetUsers getUsers,
-  })  : _getProducts = getProducts,
-        _getCategories = getCategories,
-        _getUsers = getUsers;
+    required StoreUseCases storeUseCases,
+  }) : _storeUseCases = storeUseCases {
+    _initializeProvider();
+  }
 
   StoreState _state = StoreState.initial;
   String _errorMessage = '';
@@ -28,6 +49,24 @@ class StoreProvider extends ChangeNotifier {
   List<Product> _products = [];
   List<Category> _categories = [];
   List<User> _users = [];
+
+  // Método privado para separar la lógica de inicialización
+  void _initializeProvider() {
+    _resetState();
+    _logProviderInitialization();
+  }
+
+  void _resetState() {
+    _state = StoreState.initial;
+    _errorMessage = '';
+    _products = [];
+    _categories = [];
+    _users = [];
+  }
+
+  void _logProviderInitialization() {
+    print('[StoreProvider] Initialized with StoreUseCases');
+  }
 
   StoreState get state => _state;
   String get errorMessage => _errorMessage;
@@ -42,11 +81,11 @@ class StoreProvider extends ChangeNotifier {
   Future<void> loadProducts() async {
     _setState(StoreState.loading);
     
-    final result = await _getProducts(NoParams());
-    result.fold(
-      (failure) => _setError('Error al cargar productos: ${failure.message}'),
-      (products) {
-        _products = products;
+    final productsApiCallResult = await _storeUseCases.getProducts();
+    productsApiCallResult.fold(
+      (Failure apiFailureReason) => _setError('Error al cargar productos: ${apiFailureReason.message}'),
+      (List<Product> fetchedProductsList) {
+        _products = fetchedProductsList;
         _categories = [];
         _users = [];
         _setState(StoreState.loaded);
@@ -57,11 +96,11 @@ class StoreProvider extends ChangeNotifier {
   Future<void> loadCategories() async {
     _setState(StoreState.loading);
     
-    final result = await _getCategories(NoParams());
-    result.fold(
-      (failure) => _setError('Error al cargar categorías: ${failure.message}'),
-      (categories) {
-        _categories = categories;
+    final categoriesApiCallResult = await _storeUseCases.getCategories();
+    categoriesApiCallResult.fold(
+      (Failure apiFailureReason) => _setError('Error al cargar categorías: ${apiFailureReason.message}'),
+      (List<Category> fetchedCategoriesList) {
+        _categories = fetchedCategoriesList;
         _products = [];
         _users = [];
         _setState(StoreState.loaded);
@@ -72,11 +111,11 @@ class StoreProvider extends ChangeNotifier {
   Future<void> loadUsers() async {
     _setState(StoreState.loading);
     
-    final result = await _getUsers(NoParams());
-    result.fold(
-      (failure) => _setError('Error al cargar usuarios: ${failure.message}'),
-      (users) {
-        _users = users;
+    final usersApiCallResult = await _storeUseCases.getUsers();
+    usersApiCallResult.fold(
+      (Failure apiFailureReason) => _setError('Error al cargar usuarios: ${apiFailureReason.message}'),
+      (List<User> fetchedUsersList) {
+        _users = fetchedUsersList;
         _products = [];
         _categories = [];
         _setState(StoreState.loaded);
@@ -84,17 +123,17 @@ class StoreProvider extends ChangeNotifier {
     );
   }
 
-  void _setState(StoreState newState) {
-    _state = newState;
-    if (newState != StoreState.error) {
+  void _setState(StoreState newProviderState) {
+    _state = newProviderState;
+    if (newProviderState != StoreState.error) {
       _errorMessage = '';
     }
     notifyListeners();
   }
 
-  void _setError(String message) {
+  void _setError(String userFriendlyErrorMessage) {
     _state = StoreState.error;
-    _errorMessage = message;
+    _errorMessage = userFriendlyErrorMessage;
     notifyListeners();
   }
 
@@ -111,21 +150,21 @@ class StoreProvider extends ChangeNotifier {
     
     if (_products.isNotEmpty) {
       print('\n--- Productos ---');
-      for (var product in _products) {
+      for (Product product in _products) {
         print('${product.title} | \$${product.price}\n${product.description}\nCategoría: ${product.category}\n---');
       }
     }
 
     if (_categories.isNotEmpty) {
       print('\n--- Categorías ---');
-      for (var category in _categories) {
+      for (Category category in _categories) {
         print(category.name);
       }
     }
 
     if (_users.isNotEmpty) {
       print('\n--- Usuarios ---');
-      for (var user in _users) {
+      for (User user in _users) {
         print('ID: ${user.id} | ${user.username} | ${user.email}');
       }
     }
@@ -138,7 +177,7 @@ class StoreProvider extends ChangeNotifier {
     }
 
     print('\n== PRODUCTOS ==');
-    for (var product in _products) {
+    for (Product product in _products) {
       print('ID: ${product.id}');
       print('Título: ${product.title}');
       print('Descripción: ${product.description}');
@@ -170,10 +209,10 @@ class StoreProvider extends ChangeNotifier {
     }
 
     print('\n== USUARIOS ==');
-    for (var user in _users) {
+    for (User user in _users) {
       print('ID: ${user.id}');
-      print('Username: ${user.username}');
-      print('Email: ${user.email}');
+      print('Nombre de usuario: ${user.username}');
+      print('Correo: ${user.email}');
       print('---');
     }
     print('Total de usuarios: ${_users.length}');

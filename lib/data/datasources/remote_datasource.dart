@@ -6,7 +6,7 @@ import 'package:step2/data/models/product_model.dart';
 import 'package:step2/data/models/user_model.dart';
 
 class RemoteDataSource {
-  final baseUrl = 'https://fakestoreapi.com';
+  final baseUrl = 'https://fakestorewwwwwapi.com';
 
   Future<List<ProductModel>> fetchProducts() async {
     final response = await http.get(Uri.parse('$baseUrl/products'));
@@ -14,7 +14,7 @@ class RemoteDataSource {
       final List data = json.decode(response.body);
       return data.map((item) => ProductModel.fromJson(item)).toList();
     } else {
-      throw Exception('Failed to load products');
+      throw Exception('Error al cargar productos');
     }
   }
 
@@ -26,7 +26,7 @@ class RemoteDataSource {
           .map((name) => CategoryModel.fromJson(name as String))
           .toList();
     }
-    throw Exception('Error: ${response.statusCode}');
+    throw Exception('Error al cargar categorías: ${response.statusCode}');
   }
 
   Future<List<UserModel>> fetchUsers() async {
@@ -35,6 +35,6 @@ class RemoteDataSource {
       final List data = json.decode(response.body);
       return data.map((e) => UserModel.fromJson(e)).toList();
     }
-    throw Exception('Error: ${response.statusCode}');
+    throw Exception('Error al cargar usuarios: ${response.statusCode}');
   }
 }

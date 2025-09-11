@@ -1,8 +1,8 @@
 import 'package:dartz/dartz.dart';
-import 'package:step2/core/error/failure.dart';
-import 'package:step2/domain/entities/category.dart';
-import 'package:step2/domain/entities/product.dart';
-import 'package:step2/domain/entities/user.dart';
+import 'package:step2/core/error/failures.dart';
+import 'package:step2/domain/entities/category_entity.dart';
+import 'package:step2/domain/entities/product_entity.dart';
+import 'package:step2/domain/entities/user_entity.dart';
 
 abstract class StoreRepository {
   Future<Either<Failure, List<Product>>> getProducts();

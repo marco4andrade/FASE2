@@ -1,11 +1,11 @@
 import 'package:dartz/dartz.dart';
 import 'package:step2/data/datasources/remote_datasource.dart';
 
-import '../../domain/entities/product.dart';
-import '../../domain/entities/category.dart';
-import '../../domain/entities/user.dart';
+import '../../domain/entities/product_entity.dart';
+import '../../domain/entities/category_entity.dart';
+import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/store_repository.dart';
-import '../../core/error/failure.dart';
+import '../../core/error/failures.dart';
 
 class StoreRepositoryImpl implements StoreRepository {
   final RemoteDataSource remoteDataSource;
