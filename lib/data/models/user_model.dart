@@ -1,46 +1,56 @@
-import '../../domain/entities/user_entity.dart';
+import 'package:meta/meta.dart';
+import '../../domain/entities/user.dart';
 
-/// **UserModel** - Modelo de datos para usuarios del Store API
-/// 
-/// Extiende [User] para proporcionar funcionalidad completa de parsing
-/// y validación de datos de usuario desde APIs externas.
-/// 
-/// **Responsabilidades:**
-/// - Parsear datos JSON a objetos User tipados y validados
-/// - Validar formato de email y campos requeridos
-/// - Manejar conversiones de ID de manera robusta
-/// - Generar errores descriptivos para debugging
-
+/// UserModel - Modelo de datos para usuarios del Store API
+///
+/// * [id] (requerido): Identificador único numérico del usuario que llega desde la API.
+///   Utilizado para identificar de manera unívoca cada usuario en el sistema.
+/// * [email] (requerido): Dirección de correo electrónico del usuario.
+///   Email principal utilizado para autenticación y comunicación con el usuario.
+/// * [username] (requerido): Nombre de usuario único para identificación.
+///   Alias público que utiliza el usuario para interactuar en la plataforma.
+@immutable
 class UserModel extends User {
-  /// **Constructor principal** - Crea instancia validada de UserModel
+  /// **Constructor** - Crea una instancia inmutable de UserModel
   /// 
-  /// Requiere todos los campos esenciales para un usuario funcional
-  /// en el sistema de tienda.
+  /// **Parámetros:**
+  /// - [id]: Identificador único del usuario
+  /// - [email]: Dirección de correo electrónico
+  /// - [username]: Nombre de usuario
   /// 
-  
-  UserModel({
-    required int id,
-    required String email,
-    required String username,
-  }) : super(
-          id: id,
-          email: email,
-          username: username,
-        );
+  const UserModel({
+    required super.id,
+    required super.email,
+    required super.username,
+  });
 
-  /// **Factory constructor** - Deserializa JSON a UserModel validado
+  /// **Representación string** - Para debugging y logging específico del modelo
   /// 
-  /// Convierte datos de usuario desde API REST en instancia tipada
-  /// con validación completa de integridad y formato.
+  /// Proporciona una representación específica del modelo con prefijo UserModel.
   /// 
-  
-  factory UserModel.fromJson(Map<String, dynamic> json) {
-    return UserModel(
-      id: json['id'] as int,
-      email: json['email'] as String,
-      username: json['username'] as String,
-    );
+  @override
+  String toString() {
+    return 'UserModel(id: $id, username: $username, email: ***@***.com)';
   }
 
-
+  /// **Copia con modificaciones** - Crea una nueva instancia con cambios
+  /// 
+  /// Útil para actualizaciones inmutables del usuario.
+  /// 
+  /// **Parámetros:**
+  /// - [id]: Nuevo ID (opcional, mantiene el actual si es null)
+  /// - [email]: Nuevo email (opcional, mantiene el actual si es null)
+  /// - [username]: Nuevo username (opcional, mantiene el actual si es null)
+  /// 
+  UserModel copyWith({
+    int? id,
+    String? email,
+    String? username,
+  }) {
+    return UserModel(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      username: username ?? this.username,
+    );
+  }
 }

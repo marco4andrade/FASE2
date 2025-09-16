@@ -1,44 +1,53 @@
 import 'package:dartz/dartz.dart';
-import 'package:step2/data/datasources/remote_datasource.dart';
+import 'package:step2/data/datasources/store_api_service.dart';
+import 'package:step2/data/models/product_model.dart';
+import 'package:step2/data/models/category_model.dart';
+import 'package:step2/data/models/user_model.dart';
+import 'package:step2/domain/repositories/store_repository.dart';
+import 'package:step2/domain/entities/product.dart';
+import 'package:step2/domain/entities/category.dart';
+import 'package:step2/domain/entities/user.dart';
+import 'package:step2/core/error/failures.dart';
 
-import '../../domain/entities/product_entity.dart';
-import '../../domain/entities/category_entity.dart';
-import '../../domain/entities/user_entity.dart';
-import '../../domain/repositories/store_repository.dart';
-import '../../core/error/failures.dart';
-
+/// **StoreRepositoryImpl** - Implementación del repositorio de tienda
+/// 
+/// Implementa StoreRepository utilizando StoreApiService como fuente de datos.
+/// Utiliza la nueva nomenclatura DomainError para mejor claridad semántica.
 class StoreRepositoryImpl implements StoreRepository {
-  final RemoteDataSource remoteDataSource;
+  final StoreApiService storeApiService;
 
-  StoreRepositoryImpl(this.remoteDataSource);
+  StoreRepositoryImpl(this.storeApiService);
 
   @override
-  Future<Either<Failure, List<Product>>> getProducts() async {
+  Future<Either<DomainError, List<Product>>> getProducts() async {
     try {
-      final products = await remoteDataSource.fetchProducts();
+      final List<ProductModel> products = await storeApiService.fetchProducts();
+      // Como ProductModel extiende Product, podemos devolver la lista directamente
       return Right(products);
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
+    } catch (error) {
+      return Left(ServerError('Error al obtener productos: $error'));
     }
   }
 
   @override
-  Future<Either<Failure, List<Category>>> getAllCategories() async {
+  Future<Either<DomainError, List<Category>>> getAllCategories() async {
     try {
-      final categories = await remoteDataSource.fetchCategories();
+      final List<CategoryModel> categories = await storeApiService.fetchCategories();
+      // Como CategoryModel extiende Category, podemos devolver la lista directamente
       return Right(categories);
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
+    } catch (error) {
+      return Left(ServerError('Error al obtener categorías: $error'));
     }
   }
 
   @override
-  Future<Either<Failure, List<User>>> getUsers() async {
+  Future<Either<DomainError, List<User>>> getUsers() async {
     try {
-      final users = await remoteDataSource.fetchUsers();
+      final List<UserModel> users = await storeApiService.fetchUsers();
+      // Como UserModel extiende User, podemos devolver la lista directamente
       return Right(users);
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
+    } catch (error) {
+      return Left(ServerError('Error al obtener usuarios: $error'));
     }
   }
 }

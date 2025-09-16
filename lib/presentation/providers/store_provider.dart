@@ -1,21 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/product_entity.dart';
-import '../../domain/entities/category_entity.dart';
-import '../../domain/entities/user_entity.dart';
-import '../../domain/usecases/store_use_cases.dart';
+import '../../domain/entities/product.dart';
+import '../../domain/entities/category.dart';
+import '../../domain/entities/user.dart';
+import '../../core/usecases/store_use_cases.dart';
 import '../../core/error/failures.dart';
-
-/// **Estados posibles del StoreProvider**
-/// 
-/// Define los estados del ciclo de vida para operaciones de carga de datos
-/// desde APIs externas.
-/// 
-/// **Estados disponibles:**
-/// - [initial]: Estado inicial, sin datos cargados
-/// - [loading]: Cargando datos desde API
-/// - [loaded]: Datos cargados exitosamente
-/// - [error]: Error en carga de datos
-enum StoreState { initial, loading, loaded, error }
+import '../../core/enum/screen_state_enum.dart';
 
 /// **StoreProvider** - Proveedor de estado para datos de tienda
 /// 
@@ -43,7 +32,7 @@ class StoreProvider extends ChangeNotifier {
     _initializeProvider();
   }
 
-  StoreState _state = StoreState.initial;
+  ScreenStateEnum _state = ScreenStateEnum.initial;
   String _errorMessage = '';
   
   List<Product> _products = [];
@@ -57,7 +46,7 @@ class StoreProvider extends ChangeNotifier {
   }
 
   void _resetState() {
-    _state = StoreState.initial;
+    _state = ScreenStateEnum.initial;
     _errorMessage = '';
     _products = [];
     _categories = [];
@@ -68,83 +57,83 @@ class StoreProvider extends ChangeNotifier {
     print('[StoreProvider] Initialized with StoreUseCases');
   }
 
-  StoreState get state => _state;
+  ScreenStateEnum get state => _state;
   String get errorMessage => _errorMessage;
   List<Product> get products => _products;
   List<Category> get categories => _categories;
   List<User> get users => _users;
 
-  bool get isLoading => _state == StoreState.loading;
-  bool get hasError => _state == StoreState.error;
-  bool get hasData => _state == StoreState.loaded;
+  bool get isLoading => _state.isLoading;
+  bool get hasError => _state.hasError;
+  bool get hasData => _state.hasData;
 
   Future<void> loadProducts() async {
-    _setState(StoreState.loading);
+    _setState(ScreenStateEnum.loading);
     
     final productsApiCallResult = await _storeUseCases.getProducts();
     productsApiCallResult.fold(
-      (Failure apiFailureReason) => _setError('Error al cargar productos: ${apiFailureReason.message}'),
+      (DomainError apiErrorReason) => _setError('Error al cargar productos: ${apiErrorReason.message}'),
       (List<Product> fetchedProductsList) {
         _products = fetchedProductsList;
         _categories = [];
         _users = [];
-        _setState(StoreState.loaded);
+        _setState(ScreenStateEnum.loaded);
       },
     );
   }
 
   Future<void> loadCategories() async {
-    _setState(StoreState.loading);
+    _setState(ScreenStateEnum.loading);
     
     final categoriesApiCallResult = await _storeUseCases.getCategories();
     categoriesApiCallResult.fold(
-      (Failure apiFailureReason) => _setError('Error al cargar categorías: ${apiFailureReason.message}'),
+      (DomainError apiErrorReason) => _setError('Error al cargar categorías: ${apiErrorReason.message}'),
       (List<Category> fetchedCategoriesList) {
         _categories = fetchedCategoriesList;
         _products = [];
         _users = [];
-        _setState(StoreState.loaded);
+        _setState(ScreenStateEnum.loaded);
       },
     );
   }
 
   Future<void> loadUsers() async {
-    _setState(StoreState.loading);
+    _setState(ScreenStateEnum.loading);
     
     final usersApiCallResult = await _storeUseCases.getUsers();
     usersApiCallResult.fold(
-      (Failure apiFailureReason) => _setError('Error al cargar usuarios: ${apiFailureReason.message}'),
+      (DomainError apiErrorReason) => _setError('Error al cargar usuarios: ${apiErrorReason.message}'),
       (List<User> fetchedUsersList) {
         _users = fetchedUsersList;
         _products = [];
         _categories = [];
-        _setState(StoreState.loaded);
+        _setState(ScreenStateEnum.loaded);
       },
     );
   }
 
-  void _setState(StoreState newProviderState) {
+  void _setState(ScreenStateEnum newProviderState) {
     _state = newProviderState;
-    if (newProviderState != StoreState.error) {
+    if (newProviderState != ScreenStateEnum.error) {
       _errorMessage = '';
     }
     notifyListeners();
   }
 
   void _setError(String userFriendlyErrorMessage) {
-    _state = StoreState.error;
+    _state = ScreenStateEnum.error;
     _errorMessage = userFriendlyErrorMessage;
     notifyListeners();
   }
 
   void clearError() {
-    if (_state == StoreState.error) {
-      _setState(StoreState.initial);
+    if (_state.hasError) {
+      _setState(ScreenStateEnum.initial);
     }
   }
 
   void printDataToConsole() {
-    if (_state != StoreState.loaded) return;
+    if (!_state.canShowContent) return;
 
     print('\n== FASE 2 - Store API ==');
     
