@@ -1,56 +1,46 @@
 import 'package:meta/meta.dart';
-import '../../domain/entities/user.dart';
 
-/// UserModel - Modelo de datos para usuarios del Store API
+/// **UserModel** - Modelo de datos para usuarios del Store API
 ///
-/// * [id] (requerido): Identificador único numérico del usuario que llega desde la API.
-///   Utilizado para identificar de manera unívoca cada usuario en el sistema.
-/// * [email] (requerido): Dirección de correo electrónico del usuario.
-///   Email principal utilizado para autenticación y comunicación con el usuario.
-/// * [username] (requerido): Nombre de usuario único para identificación.
-///   Alias público que utiliza el usuario para interactuar en la plataforma.
+/// Representa un usuario con toda la información necesaria para la aplicación.
+/// Este modelo maneja los datos que llegan desde la API y los expone
+/// de manera tipada y segura a las capas superiores.
+///
+/// **Propiedades:**
+/// * [id] (requerido): Identificador único numérico del usuario
+/// * [email] (requerido): Dirección de correo electrónico del usuario
+/// * [username] (requerido): Nombre de usuario único para identificación
 @immutable
-class UserModel extends User {
-  /// **Constructor** - Crea una instancia inmutable de UserModel
-  /// 
-  /// **Parámetros:**
-  /// - [id]: Identificador único del usuario
-  /// - [email]: Dirección de correo electrónico
-  /// - [username]: Nombre de usuario
-  /// 
+class UserModel {
+  final int id;
+  final String email;
+  final String username;
+
   const UserModel({
-    required super.id,
-    required super.email,
-    required super.username,
+    required this.id,
+    required this.email,
+    required this.username,
   });
 
-  /// **Representación string** - Para debugging y logging específico del modelo
-  /// 
-  /// Proporciona una representación específica del modelo con prefijo UserModel.
-  /// 
   @override
   String toString() {
     return 'UserModel(id: $id, username: $username, email: ***@***.com)';
   }
 
-  /// **Copia con modificaciones** - Crea una nueva instancia con cambios
-  /// 
-  /// Útil para actualizaciones inmutables del usuario.
-  /// 
-  /// **Parámetros:**
-  /// - [id]: Nuevo ID (opcional, mantiene el actual si es null)
-  /// - [email]: Nuevo email (opcional, mantiene el actual si es null)
-  /// - [username]: Nuevo username (opcional, mantiene el actual si es null)
-  /// 
-  UserModel copyWith({
-    int? id,
-    String? email,
-    String? username,
-  }) {
+  UserModel copyWith({int? id, String? email, String? username}) {
     return UserModel(
       id: id ?? this.id,
       email: email ?? this.email,
       username: username ?? this.username,
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is UserModel && other.id == id;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
 }
